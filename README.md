@@ -10,7 +10,7 @@ This project builds two distinct services that perform the same core task but ar
 
 ## Inspiration
 
-This project is a partial implementation based on the findings of the following research paper, focusing on the performance comparison between REST and gRPC.
+This project is inspired from findings of the following research paper, focusing on the performance comparison between REST and gRPC.
 
 * **Paper:** Performance Evaluation of Microservices Communication with REST, GraphQL, and gRPC
 * **Journal:** International Journal of Electronics and Telecommunication
@@ -45,9 +45,9 @@ This service represents a standard, common approach to building microservices.
 * **Task:**
     1.  Receives a JSON request.
     2.  Cleans the text using the pure Python function.
-    3.  Runs a mock ML inference model
-    4.  **Writes the result to a PostgreSQL database.**
-    5.  Returns a JSON response.
+    3.  Runs a mock ML inference model.
+    4.  Inserts the new classification result into PostgreSQL table, Retrieves the most recent 5 classification records.
+    5.  Return a JSON response with summarized history for the response, limited to the two most recent entries.
 
 ### 2. The "Optimized" Service (`optimized_api`)
 
@@ -59,8 +59,9 @@ This service is optimized for high performance by changing both the protocol and
 * **Task:**
     1.  Receives a gRPC (Protobuf) request.
     2.  Cleans the text using the **Cython-compiled function**.
-    3.  Runs the *same* mock ML inference model
-    4.  Returns a gRPC (Protobuf) response.
+    3.  Runs the *same* mock ML inference model.
+    4.  Runs the *same*  db operations.
+    4.  Returns a gRPC (Protobuf) response with *same* details.
 
 ---
 
@@ -69,12 +70,12 @@ This service is optimized for high performance by changing both the protocol and
 This project is structured as a collection of independent microservices.
 
 
-
 * `services/baseline_api/`: The Flask/Gunicorn REST API.
 * `services/optimized_api/`: The gRPC/Cython API.
-* `services/event_consumer/`: A Kafka consumer (for a full event-driven architecture).
+* `services/event_consumer/`: A Kafka consumer (for a full event-driven architecture). #WIP
 * `shared/`: Contains the files used to build the optimized service, including `optimizer.pyx` (Cython source) and `classifier.proto` (gRPC contract).
-* `load_testing/`: Contains the test scripts.
+* `load_testing/locust_REST.py`: Test script for REST micro-service.
+* `load_testing/locust_gRPC.py`: Test script for gRPC micro-service.
 
 ---
 
@@ -121,6 +122,8 @@ We will run the tests from inside the cluster to get the most accurate results, 
 
 Build and deploy the Locust pod that we can exec into.
 ```bash
+docker build  -f Dockerfile -t perf-locust:latest .
+minikube image load perf-locust:latest
 kubectl apply -f locust.yaml
 ```
 
@@ -155,7 +158,7 @@ This script will print statistics (RPS, Latency, etc.) directly to console.
 * `shared/classifier.proto`: The gRPC "contract" that defines the API.
 * `shared/optimizer.pyx`: The Cython source code for the optimized preprocessor.
 * `shared/setup.py`: The build script used to compile the Cython code.
-* `Dockerfile`: A multi-stage Dockerfile for each microservice.
+* `*/Dockerfile`: A multi-stage Dockerfile for each microservice.
 
 ---
 
