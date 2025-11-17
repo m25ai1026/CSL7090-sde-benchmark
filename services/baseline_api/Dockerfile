@@ -4,6 +4,9 @@ WORKDIR /app
 
 RUN pip install --upgrade pip
 RUN pip install wheel
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY baseline_api/requirements.txt .
 COPY baseline_api/rest_server.py .

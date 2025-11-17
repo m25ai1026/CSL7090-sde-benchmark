@@ -13,6 +13,14 @@ config:
   APP_MODE: "prod"
   LOG_LEVEL: "info"
   SERVICE_NAME: "baseline-api"
+  DB_HOST: "postgres-sde-benchmark-postgresql.sde-benchmark.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_USER: "testuser"
+  DB_NAME: "testdb"
+
+postgres:
+  secretName: "postgres-sde-benchmark-postgresql"
+  passwordKey: "password"
 
 resources:
   requests:
